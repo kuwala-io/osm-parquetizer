@@ -11,7 +11,6 @@ import java.util.List;
 import static org.apache.parquet.schema.PrimitiveType.PrimitiveTypeName.*;
 import static org.apache.parquet.schema.Type.Repetition.REQUIRED;
 
-
 /**
  * Created by adrian.bona on 26/03/16.
  */

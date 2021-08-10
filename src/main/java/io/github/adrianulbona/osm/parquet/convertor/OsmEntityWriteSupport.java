@@ -34,7 +34,6 @@ public abstract class OsmEntityWriteSupport<E extends Entity> extends WriteSuppo
     private final PrimitiveType changesetType;
     private final PrimitiveType uidType;
     private final PrimitiveType userSidType;
-
     private final boolean excludeMetadata;
 
     protected RecordConsumer recordConsumer;
@@ -107,21 +106,22 @@ public abstract class OsmEntityWriteSupport<E extends Entity> extends WriteSuppo
 
         if (!record.getTags().isEmpty()) {
             recordConsumer.startField(tags.getName(), index);
-            for (Tag tag : record.getTags()) {
-                recordConsumer.startGroup();
+                for (Tag tag : record.getTags()) {
+                    recordConsumer.startGroup();
 
-                recordConsumer.startField(tagKeyType.getName(), 0);
-                recordConsumer.addBinary(Binary.fromString(tag.getKey()));
-                recordConsumer.endField(tagKeyType.getName(), 0);
+                    recordConsumer.startField(tagKeyType.getName(), 0);
+                    recordConsumer.addBinary(Binary.fromString(tag.getKey()));
+                    recordConsumer.endField(tagKeyType.getName(), 0);
 
-                recordConsumer.startField(tagValueType.getName(), 1);
-                recordConsumer.addBinary(Binary.fromString(tag.getValue()));
-                recordConsumer.endField(tagValueType.getName(), 1);
+                    recordConsumer.startField(tagValueType.getName(), 1);
+                    recordConsumer.addBinary(Binary.fromString(tag.getValue()));
+                    recordConsumer.endField(tagValueType.getName(), 1);
 
-                recordConsumer.endGroup();
-            }
+                    recordConsumer.endGroup();
+                }
             recordConsumer.endField(tags.getName(), index);
         }
+
         index++;
 
         writeSpecificFields(record, index);

@@ -1,5 +1,6 @@
 package io.github.adrianulbona.osm.parquet;
 
+import org.apache.commons.io.FileUtils;
 import org.kohsuke.args4j.Argument;
 import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.CmdLineParser;
@@ -10,25 +11,28 @@ import org.openstreetmap.osmosis.pbf2.v0_6.PbfReader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
+import org.iq80.leveldb.*;
 
+import static org.iq80.leveldb.impl.Iq80DBFactory.*;
 import static java.util.Collections.unmodifiableList;
 import static org.openstreetmap.osmosis.core.domain.v0_6.EntityType.Node;
 import static org.openstreetmap.osmosis.core.domain.v0_6.EntityType.Relation;
-
 
 /**
  * Created by adrian.bona on 27/03/16.
  */
 public class App {
 
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) {
         final MultiEntitySinkConfig config = new MultiEntitySinkConfig();
         final CmdLineParser cmdLineParser = new CmdLineParser(config);
+
         try {
             cmdLineParser.parseArgument(args);
             final PbfReader reader = new PbfReader(config.getSource().toFile(), config.threads);
@@ -103,8 +107,19 @@ public class App {
     private static class MultiEntitySinkObserver implements MultiEntitySink.Observer {
 
         private static final Logger LOGGER = LoggerFactory.getLogger(MultiEntitySinkObserver.class);
-
         private AtomicLong totalEntitiesCount;
+        private DB db;
+
+        public MultiEntitySinkObserver() {
+            Options options = new Options();
+            options.createIfMissing(true);
+
+            try {
+                this.db = factory.open(new File(".leveldb"), options);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
 
         @Override
         public void started() {
@@ -113,15 +128,35 @@ public class App {
 
         @Override
         public void processed(Entity entity) {
+            if (entity.getClass().getName().equals("org.openstreetmap.osmosis.core.domain.v0_6.Node")) {
+                db.put(
+                    bytes(String.valueOf(entity.getId())),
+                    bytes(((org.openstreetmap.osmosis.core.domain.v0_6.Node) entity).getLongitude() +
+                        "," +
+                        ((org.openstreetmap.osmosis.core.domain.v0_6.Node) entity).getLatitude())
+                );
+            } else if (entity.getClass().getName().equals("org.openstreetmap.osmosis.core.domain.v0_6.Way")) {
+                try {
+                    db.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+
             final long count = totalEntitiesCount.incrementAndGet();
             if (count % 1000000 == 0) {
                 LOGGER.info("Entities processed: " + count);
-
             }
         }
 
         @Override
         public void ended() {
+            try {
+                FileUtils.deleteDirectory(new File(".leveldb"));
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
             LOGGER.info("Total entities processed: " + totalEntitiesCount.get());
         }
     }
