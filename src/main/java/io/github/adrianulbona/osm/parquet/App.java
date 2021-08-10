@@ -40,6 +40,8 @@ public class App {
             sink.addObserver(new MultiEntitySinkObserver());
             reader.setSink(sink);
             reader.run();
+
+            System.exit(0);
         } catch (CmdLineException e) {
             System.out.println(e.getMessage());
             System.out.print("Usage: java -jar osm-parquetizer.jar");
