@@ -50,14 +50,23 @@ public class App {
         }
     }
 
+    @SuppressWarnings("DuplicatedCode")
     private static class MultiEntitySinkConfig implements MultiEntitySink.Config {
 
-        @Argument(index = 0, metaVar = "pbf-path", usage = "the OSM PBF file to be parquetized", required = true)
-        private Path source;
+        @Option(name = "--pbf-path", usage = "the OSM PBF file to be parquetized")
+        private Path source = null;
 
-        @Argument(index = 1, metaVar = "output-path", usage = "the directory where to store the Parquet files",
-                required = false)
-        private Path destinationFolder;
+        @Option(name = "--output-path", usage = "the directory where to store the Parquet files")
+        private Path destinationFolder = null;
+
+        @Option(name = "--continent", usage = "the continent of the OSM PBF file")
+        private String continent = null;
+
+        @Option(name = "--country", usage = "the country of the OSM PBF file")
+        private String country = null;
+
+        @Option(name = "--country_region", usage = "the country region of the OSM PBF file")
+        private String countryRegion = null;
 
         @Option(name = "--pbf-threads", usage = "if present number of threads for PbfReader")
         private int threads = 1;
@@ -81,12 +90,52 @@ public class App {
 
         @Override
         public Path getSource() {
-            return this.source;
+            if (this.source != null) {
+                return this.source;
+            }
+
+            String source = "tmp/osmFiles/pbf";
+
+            if (this.continent != null) {
+                source += ("/" + this.continent);
+            }
+
+            if (this.country != null) {
+                source += ("/" + this.country);
+            }
+
+            if (this.countryRegion != null) {
+                source += ("/" + this.countryRegion);
+            }
+
+            source += ".osm.pbf";
+
+            return Path.of(source);
         }
 
         @Override
         public Path getDestinationFolder() {
-            return this.destinationFolder != null ? this.destinationFolder : this.source.toAbsolutePath().getParent();
+            if (this.destinationFolder != null) {
+                return this.destinationFolder;
+            }
+
+            String destination = "tmp/osmFiles/parquet";
+
+            if (this.continent != null) {
+                destination += ("/" + this.continent);
+            }
+
+            if (this.country != null) {
+                destination += ("/" + this.country);
+            }
+
+            if (this.countryRegion != null) {
+                destination += ("/" + this.countryRegion);
+            }
+
+            destination += "/osm-parquetizer";
+
+            return Path.of(destination);
         }
 
         @Override
@@ -140,6 +189,7 @@ public class App {
             } else if (entity.getClass().getName().equals("org.openstreetmap.osmosis.core.domain.v0_6.Way")) {
                 try {
                     db.close();
+                    // TODO: Save entry that was skipped because of switching the leveldb connection
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
