@@ -133,7 +133,7 @@ public class App {
                 destination += ("/" + this.countryRegion);
             }
 
-            destination += "/parquet/osm-parquetizer";
+            destination += "/parquet/osm_parquetizer";
 
             return Path.of(destination);
         }
