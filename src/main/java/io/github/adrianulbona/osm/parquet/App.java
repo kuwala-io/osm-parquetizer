@@ -94,7 +94,7 @@ public class App {
                 return this.source;
             }
 
-            String source = "tmp/osmFiles/pbf";
+            String source = "tmp/kuwala/osm_files";
 
             if (this.continent != null) {
                 source += ("/" + this.continent);
@@ -108,7 +108,7 @@ public class App {
                 source += ("/" + this.countryRegion);
             }
 
-            source += ".osm.pbf";
+            source += "/pbf/geo_fabrik.osm.pbf";
 
             return Path.of(source);
         }
@@ -119,7 +119,7 @@ public class App {
                 return this.destinationFolder;
             }
 
-            String destination = "tmp/osmFiles/parquet";
+            String destination = "tmp/kuwala/osm_files";
 
             if (this.continent != null) {
                 destination += ("/" + this.continent);
@@ -133,7 +133,7 @@ public class App {
                 destination += ("/" + this.countryRegion);
             }
 
-            destination += "/osm-parquetizer";
+            destination += "/parquet/osm-parquetizer";
 
             return Path.of(destination);
         }
