@@ -33,12 +33,11 @@ jobs:
           ${{ runner.os }}-buildx-
 
     # And make it available for the builds
-    - name: Build neo4j and push
+    - name: Build Osm Parquetizer and push
       uses: docker/build-push-action@v2
       with:
-        context: kuwala
         file: dockerfile
         push: false
-        tags: kuwala/neo4j:${{ github.sha }}
+        tags: kuwala/osm_parquetizer:${{ github.sha }}
         cache-from: type=local,src=/tmp/.buildx-cache
         cache-to: type=local,dest=/tmp/.buildx-cache-new
