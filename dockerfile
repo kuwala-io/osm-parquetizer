@@ -1,4 +1,8 @@
-FROM maven:3.8.4-jdk-11-slim
-COPY . /opt/app
+FROM maven:openjdk
+
+COPY ./src /opt/app/src
+COPY ./pom.xml /opt/app/pom.xml
+
 WORKDIR /opt/app
+
 RUN mvn clean package
